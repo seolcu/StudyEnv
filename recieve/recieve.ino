@@ -1,28 +1,25 @@
-#include <VirtualWire.h>
- 
-byte message[VW_MAX_MESSAGE_LEN]; // a buffer to store the incoming messages
-byte messageLength = VW_MAX_MESSAGE_LEN; // the size of the message
- 
-const int RX_DIO_Pin = 11; // default 11
- 
-void setup()
-{
+#include <PinChangeInterruptHandler.h>
+#include <RFReceiver.h>
+
+// Listen on digital pin 11
+RFReceiver receiver(11);
+
+void setup() {
   Serial.begin(9600);
-  Serial.println("Ready to receive:");
-  vw_set_rx_pin(RX_DIO_Pin); // Initialize RX pin
-  vw_setup(2000); // Transfer speed : 2000 bits per sec
-  vw_rx_start(); // Start the receiver
+  receiver.begin();
 }
- 
-void loop()
-{
-  if (vw_get_message(message, &messageLength)) // Non-blocking
-  {
-    Serial.print("Received: ");
-    for (int i = 0; i < messageLength; i++)
-    {
-      Serial.write(message[i]);
-    }
-    Serial.println();
-  }
+
+void loop() {
+  char msg[MAX_PACKAGE_SIZE];
+  byte senderId = 0;
+  byte packageId = 0;
+  byte len = receiver.recvPackage((byte *)msg, &senderId, &packageId);
+
+  Serial.println("");
+  Serial.print("Package: ");
+  Serial.println(packageId);
+  Serial.print("Sender: ");
+  Serial.println(senderId);
+  Serial.print("Message: ");
+  Serial.println(msg);
 }
